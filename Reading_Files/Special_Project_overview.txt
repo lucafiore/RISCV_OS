@@ -16,6 +16,8 @@ b) Board Xilinx con dispositivo Zynq : da chiedere a Di Carlo
 Useful links to write a SDRAM controller:
 https://www.intel.cn/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/nios2/n2cpu_nii51005.pdf
 
+https://www.fpga4fun.com/SDRAM.html
+
 ==============================================================
 3) Learn how to write in System Verilog
 http://www.asic-world.com/systemverilog/tutorial.html
