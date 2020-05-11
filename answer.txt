@@ -1,0 +1,3 @@
+Answer about RISC-V GNU Compiler Toolchain:
+	1) What are the differeces between ELF/Newlib toolchain and Linux-ELF/glibc toolchain ?
+	2)
