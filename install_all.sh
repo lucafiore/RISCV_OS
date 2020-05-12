@@ -15,6 +15,26 @@
 #		
 source ccommon.sh
 
+gitclone() {
+	# $1 comando
+	# $2 clone dir
+	# $3 log file
+	cmd=$1
+	clone_name=$2
+	log_file=$3
+
+	if ! test -d $CLONE/$clone_name; then
+		Print_verbose "[*] 		Download of $clone_name" $verbose	
+		cd $CLONE
+		#mon_run "$cmd" "$LOG_DIR/log/$log_file.txt" 1 $LINENO
+		$cmd
+		cd ..
+	fi
+	if test -d $clone_name; then
+		rm -r $clone_name
+	fi
+	cp -r $CLONE/$clone_name .
+}
 
 UsageExit() {
 	   echo \
@@ -56,13 +76,15 @@ UsageExit() {
 ########### Variable
 SYSTEM="ubuntu"
 DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-INSTALL_DIR="$DIR/opt/riscv"
+INSTALL_DIR="/opt/riscv"
+LOG_DIR=$DIR
 # variabili per il cross compiler
 CROSS_COMPILER="pulp" #decide il tipo di compilatore da installare
 TEST_SUITE=1 # se 1 la test suite viene installata altrimenti no
 TEST_SUITE_BIT=64 
 # pulpussimo
 PULPISSIMO_ROOT="$DIR/pulpissimo"
+CLONE="clone_dir"
 ########### end variable
 
 TEMP=`getopt -o vc:t: --long verbose,cross_compiler:,test_suite: -- "$@"`
@@ -84,10 +106,10 @@ while true; do
 					# This will use the multilib support to build the libraries for 
 					# the various cores (riscy, zeroriscy and so on). The right libraries 
 					# will be selected depending on which compiler options you use.
-					CROSS_COMPILER="pulp"; break;;
+					CROSS_COMPILER="pulp";;
 				newlib)
 					# Newlib cross-compiler, You should now be able to use riscv-gcc and its cousins.
-					CROSS_COMPILER="newlib"; break;;
+					CROSS_COMPILER="newlib";;
 				linux|linux64)
 					# Linux cross-compiler
 					# Supported architectures are rv32i or rv64i plus standard extensions (a)tomics, 
@@ -95,20 +117,22 @@ while true; do
 					# Supported ABIs are ilp32 (32-bit soft-float), ilp32d (32-bit hard-float), ilp32f 
 					# (32-bit with single-precision in registers and double in memory, niche use only), 
 					# lp64 lp64f lp64d (same but with 64-bit long and pointers).
-                    CROSS_COMPILER="linux64"; break;;
+                    CROSS_COMPILER="linux64";;
 				linux32)
 					# as before but 32bit
-					CROSS_COMPILER="linux32"; break;;
+					CROSS_COMPILER="linux32"
+					;;
 				linuxm)
 					# Linux cross-compiler, both 32 and 64 supported
-					CROSS_COMPILER="linuxm"; break;;
+					CROSS_COMPILER="linuxm"
+					;;
 				*)
 					echo "[!!] error on cross compiler option!!"
 					UsageExit;
-					break;;
+					;;
 			esac
 			shift
-			break;;
+			;;
 		-t|--test_suite)
 			# The DejaGnu test suite has been ported to RISC-V. This can run with GDB simulator for elf
 			# toolchain or Qemu for linux toolchain, and GDB simulator doesn't support
@@ -116,27 +140,28 @@ while true; do
 			shift 
 			case $1 in
 				y)
-					TEST_SUITE=1; break;;
+					TEST_SUITE=1;;
 				n) 
-					TEST_SUITE=0; break;;
+					TEST_SUITE=0;;
 				y32)
 					TEST_SUITE=1;
-					TEST_SUITE_BIT=32
-					break;;
+					TEST_SUITE_BIT=32;;
 				*)
 					echo "[!!] error on test suite option, only y/n are allowed!!"
-					UsageExit;
-					break;;
+					UsageExit;;
 			esac
 			shift
-			break;;					
+			;;
 		--)
 			break;;
 		*)
-			UsageExit;;
+			UsageExit
+			;;
 	esac
 done
-
+############# Allargo la finestra per far  stare tutte le scritte 
+mon_run "sudo apt-get install xterm -y" $LOG_DIR/log/xterm.txt  1 $LINENO 
+resize -s 30 145
 
 ############# verifica del sistema operativo
 Print_verbose "[*] Operative system check:" $verbose
@@ -149,11 +174,10 @@ else
 	exit 1;
 fi
 Print_verbose "[*]		Your os is $SYSTEM" $verbose
-
 ############# Git instllation
 if ! hash git 2>/dev/null ; then
 	Print_verbose "[*] Install git"
-	mon_run "sudo apt-get install git -y" $INSTALL_DIR/log/git.txt 1 
+	mon_run "sudo apt-get install git -y" $LOG_DIR/log/git.txt 1 $LINENO 
 	# when git install finish this command finished
 fi
 
@@ -167,22 +191,19 @@ fi
 Print_verbose "[+] Installation of pulp-riscv-gnu-toolchain: " $verbose
 Print_verbose "[*] 		Install dipendecies" $verbose
 if [[ $SYSTEM = "ubuntu" ]]; then
-	mon_run "sudo apt-get install autoconf automake autotools-dev curl\
+        mon_run "sudo apt-get install autoconf automake autotools-dev curl\
 		libmpc-dev libmpfr-dev libgmp-dev gawk build-essential\
-		 bison flex texinfo gperf libtool patchutils bc zlib1g-dev -y" $INSTALL_DIR/log/dep_toolchain.txt 1
+		 bison flex texinfo gperf libtool patchutils bc zlib1g-dev -y" $LOG_DIR/log/dep_toolchain.txt 1 $LINENO
 else
 	mon_run "sudo yum install autoconf automake libmpc-devel mpfr-devel \
 		gmp-devel gawk  bison flex texinfo patchutils \
-		gcc gcc-c++ zlib-devel -y" $INSTALL_DIR/log/dep_toolchain.txt 0
-
-# Download of toolchain
-if ! test -d pulp-riscv-gnu-toolchain; then
-	Print_verbose "[*] 		Download of toolchain" $vp-perbose
-	mon_run "git clone --recursive https://github.com/pulp-platform/pulp-riscv-gnu-toolchain -y" \
-				$INSTALL_DIR/log/toolchain.txt 1
+		gcc gcc-c++ zlib-devel -y" $LOG_DIR/log/dep_toolchain.txt 0 $LINENO
 fi
+mkdir -p $CLONE
+# Download of toolchain
+gitclone "git clone --recursive https://github.com/pulp-platform/pulp-riscv-gnu-toolchain" "pulp-riscv-gnu-toolchain" "toolchain"
 
-mkdir -p $INSTALL_DIR
+sudo mkdir -p $INSTALL_DIR
 cd pulp-riscv-gnu-toolchain
 export PATH=$PATH:$INSTALL_DIR/bin
 echo "export PATH=$PATH:$INSTALL_DIR/bin" >> ~/.bash_profile
@@ -191,31 +212,30 @@ echo "export PATH=$PATH:$INSTALL_DIR/bin" >> ~/.bash_profile
 Print_verbose "[*] 		Install selected cross compiler: $CROSS_COMPILER" $verbose
 case $CROSS_COMPILER in
 	pulp)
-		mon_run "./configure --prefix=/opt/riscv --with-arch=rv32imc \
-			--with-cmodel=medlow --enable-multilib" $DIR/log/cross_compiler.txt 1 
-		mon_run "make" $DIR/log/cross_compiler.txt 0
-		break;;
+		mon_run "sudo ./configure --prefix=$INSTALL_DIR --with-arch=rv32imc --with-cmodel=medlow --enable-multilib"\
+		       	$LOG_DIR/log/cross_compiler.txt 1 $LINENO
+		mon_run "sudo make" $LOG_DIR/log/cross_compiler.txt 0 $LINENO
+		;;
 	newlib)
-		mon_run "./configure --prefix=/opt/riscv"  $DIR/log/cross_compiler.txt 1
-		mon_run "make" $DIR/log/cross_compiler.txt 0
-		break;;
+		mon_run "sudo ./configure --prefix=$INSTALL_DIR"  $LOG_DIR/log/cross_compiler.txt 1 $LINENO
+		mon_run "sudo make" $LOG_DIR/log/cross_compiler.txt 0 $LINENO
+		;;
 	linux64)
-		mon_run "./configure --prefix=/opt/riscv" $DIR/log/cross_compiler.txt 1 
-		mon_run "make linux" $DIR/log/cross_compiler.txt 0
-		break;;
+		mon_run "sudo ./configure --prefix=$INSTALL_DIR" $LOG_DIR/log/cross_compiler.txt 1  $LINENO
+		mon_run "make linux" $LOG_DIR/log/cross_compiler.txt 0 $LINENO
+		;;
 	linux32)
-		mon_run "./configure --prefix=/opt/riscv --with-arch=rv32g \ 
-			--with-abi=ilp32d" $DIR/log/cross_compiler.txt 1
-		mon_run "make linux" $DIR/log/cross_compiler.txt 0
-		break;;
+		mon_run "./configure --prefix=$INSTALL_DIR --with-arch=rv32g --with-abi=ilp32d" $LOG_DIR/log/cross_compiler.txt 1 $LINENO
+		mon_run "make linux" $LOG_DIR/log/cross_compiler.txt 0 $LINENO
+		;;
 	linuxm)
-		mon_run "./configure --prefix=/opt/riscv --enable-multilib" $DIR/log/cross_compiler.txt 1 
-		mon_run "make linux" $DIR/log/cross_compiler.txt 0
-		break;;
+		mon_run "./configure --prefix=$INSTALL_DIR --enable-multilib" $LOG_DIR/log/cross_compiler.txt 1 $LINENO
+		mon_run "make linux" $LOG_DIR/log/cross_compiler.txt 0 $LINENO
+		;;
 	*)
 		echo "[!!] Inter error on cross_compiler options"
 		UsageExit
-		break;;
+		;;
 esac
 
 
@@ -227,25 +247,25 @@ if [[ $TEST_SUITE -eq 1 ]]; then
 	case $CROSS_COMPILER in
 		pulp|newlib)
 			if [[ $TEST_SUITE_BIT -eq 64 ]]; then
-				mon_run "./configure --prefix=$RISCV --disable-linux \
-					--with-arch=rv64ima" $DIR/log/test_suite.txt 1
+				mon_run "sudo ./configure --prefix=$RISCV --disable-linux --with-arch=rv64ima"\
+				       	$LOG_DIR/log/test_suite.txt 1 $LINENO
 			else
-				mon_run "./configure --prefix=$RISCV --disable-linux \
-					--with-arch=rv32ima" $DIR/log/test_suite.txt 1
+				mon_run "sudo ./configure --prefix=$RISCV --disable-linux --with-arch=rv32ima"\
+				       	$LOG_DIR/log/test_suite.txt 1 $LINENO
 			fi
 			Print_verbose "[*] make" $verbose
 			
-			mon_run "make newlib" $DIR/log/test_suite.txt 0
+			mon_run "sudo make newlib" $LOG_DIR/log/test_suite.txt 0 $LINENO
 
-			mon_run "make check-gcc-newlib" $DIR/log/test_suite.txt 0
-			break;;	
+			mon_run "sudo make check-gcc-newlib" $LOG_DIR/log/test_suite.txt 0 $LINENO
+			;;
 		linux|linux32|linux64)
-			mon_run "./configure --prefix=$RISCV" $DIR/log/test_suite.txt 1
+			mon_run "./configure --prefix=$RISCV" $LOG_DIR/log/test_suite.txt 1 $LINENO
 		 
-			mon_run "make linux" $DIR/log/test_suite.txt 0
+			mon_run "make linux" $LOG_DIR/log/test_suite.txt 0 $LINENO
 
-			mon_run "make check-gcc-linux" $DIR/log/test_suite.txt 0
-			break;;
+			mon_run "make check-gcc-linux" $LOG_DIR/log/test_suite.txt 0 $LINENO
+			;;
 	esac
 fi
 
@@ -261,53 +281,62 @@ Print_verbose "[+] Installaition of SDK build process " $verbose
 # install dipendecies
 if ! hash pip2 2>/dev/null; then
 	Print_verbose "[*] 		Pip installation"
-	mon_run "sudo apt-get install pip2 pip3 -y" $DIR/log/pip.txt 1
+	mon_run "sudo apt-get install pip2 pip3 -y" $LOG_DIR/log/pip.txt 1 $LINENO
 fi
+
+###### Install dipendecies for SDK build process
 Print_verbose "[*] 		Install dipendecies for SDK build process " $verbose
 mon_run "sudo apt install git python3-pip python-pip gawk texinfo \
 	libgmp-dev libmpfr-dev libmpc-dev swig3.0 libjpeg-dev lsb-core \
 	doxygen python-sphinx sox graphicsmagick-libmagick-dev-compat \
 	libsdl2-dev libswitch-perl libftdi1-dev cmake scons libsndfile1-dev -y"\
-	$DIR/log/sdk_dep.txt 1
+	$LOG_DIR/log/sdk_dep.txt 1 $LINENO
+mon_run "sudo pip3 install openpyxl" $LOG_DIR/log/sdk_dep.txt 0 $LINENO
 mon_run "sudo pip3 install artifactory twisted prettytable sqlalchemy \
-	pyelftools 'openpyxl==2.6.4' xlsxwriter pyyaml numpy configparser pyvcd -y"\
-	$DIR/log/sdk_dep.txt 0
-mon_run "sudo pip2 install configparser -y" $DIR/log/sdk_dep.txt 0
+	pyelftools openpyxl==2.6.4 xlsxwriter pyyaml numpy configparser pyvcd"\
+	$LOG_DIR/log/sdk_dep.txt 0 $LINENO
+mon_run "sudo pip2 install configparser" $LOG_DIR/log/sdk_dep.txt 0 $LINENO
 
+######  Installation of gcc5 and g++5
 Print_verbose "[*]  	Installation of gcc5 and g++5" $verbose
-mon_run "sudo apt-get install gcc-5 g++-5 -y" $DIR/log/gcc++.txt 1
-mon_run "sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 10" $DIR/log/gcc++.txt 0
-mon_run "sudo update-alternatives --install /usr/bin/g++ g++ usr/bin/g++-5 10" $DIR/log/gcc++.txt 0
-mon_run "sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30" $DIR/log/gcc++.txt 0
-mon_run "sudo update-alternatives --set cc /usr/bin/gcc" $DIR/log/gcc++.txt 0
-mon_run "sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30" $DIR/log/gcc++.txt 0
-mon_run "sudo update-alternatives --set c++ /usr/bin/g++" $DIR/log/gcc++.txt 0
+mon_run "sudo apt-get install gcc-5 g++-5 -y" $LOG_DIR/log/gcc++.txt 1 $LINENO
+mon_run "sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 10" $LOG_DIR/log/gcc++.txt 0 $LINENO
+mon_run "sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 10" $LOG_DIR/log/gcc++.txt 0 $LINENO
+mon_run "sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30" $LOG_DIR/log/gcc++.txt 0 $LINENO
+mon_run "sudo update-alternatives --set cc /usr/bin/gcc" $LOG_DIR/log/gcc++.txt 0 $LINENO
+mon_run "sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30" $LOG_DIR/log/gcc++.txt 0 $LINENO
+mon_run "sudo update-alternatives --set c++ /usr/bin/g++" $LOG_DIR/log/gcc++.txt 0 $LINENO
 
-if ! test --d pulp_sdk; then
-	Print_verbose "[*]		Download of SDK:" $verbose
-	mon_run "git clone https://github.com/pulp-platform/pulp-sdk.git -b master" $DIR/log/sdk_downl.txt 1
-fi
+gitclone "git clone https://github.com/pulp-platform/pulp-sdk.git -b master --progress" "pulp-sdk"  "sdk_downl"
+
 cd pulp-sdk
 Print_verbose "[*] 		Target and platform selection" $verbose
-mon_run "source configs/pulpissimo.sh" $DIR/log/sdk_target.txt 1
+source configs/pulpissimo.sh
 # devo scegliere la piattaforma: board,fpga,gvsoc,hsas,rtl
-mon_run "source configs/platform-rtl.sh" $DIR/log/sdk_target.txt 0
+source configs/platform-rtl.sh
 Print_verbose "[*] 		Build" $verbose
-mon_run "make all"  $DIR/log/sdk_build.txt 1
+mon_run "make all"  $LOG_DIR/log/sdk_build.txt 1 $LINENO
 
 cd ../ #exit from sdk
 
 
 ############# Pulp builder install
+gitclone "git clone https://github.com/pulp-platform/pulp-builder.git --progress" "pulp_builder" "pulp_builder"
 
-mon_run "git clone https://github.com/pulp-platform/pulp-builder.git" $DIR/log/pulp_builder.txt 1
 cd pulp-builder
-mon_run "git checkout 0e51ae60d66f4ec326582d63a9fcd40ed2a70e15" $DIR/log/pulp_builder.txt 0
-mon_run "source configs/pulpissimo.sh" $DIR/log/pulp_builder.txt 0
-mon_run "./scripts/clean" $DIR/log/pulp_builder.txt 0
-mon_run "./scripts/update-runtime" $DIR/log/pulp_builder.txt 0
-mon_run "./scripts/build-runtime" $DIR/log/pulp_builder.txt 0
-mon_run "source sdk-setup.sh" $DIR/log/pulp_builder.txt 0
-mon_run "source configs/rtl.sh" $DIR/log/pulp_builder.txt 0
+mon_run "git checkout 0e51ae60d66f4ec326582d63a9fcd40ed2a70e15" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "source configs/pulpissimo.sh" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "./scripts/clean" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "./scripts/update-runtime" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "./scripts/build-runtime" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "source sdk-setup.sh" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+mon_run "source configs/rtl.sh" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
 cd ..
 
+
+########### Pulpissimo 
+Print_verbose "[*] 	Installation of Pulpissimo"
+gitclone "git clone https://github.com/pulp-platform/pulpissimo.git --progress " "pulpissimo" "pulpissimo"
+cd pulpissimo
+mon_run "./update-ips" $LOG_DIR/log/update_ips.txt 0 $LINENO
+i
