@@ -50,15 +50,16 @@ monitor_file_error () {
 	   # $1 è il nome del file con eventuali errori
 	   cat $1 | grep -ni "error" --color > error_log.txt
    	   if [[ $(cat error_log.txt | wc -l) -gt 0 ]]; then
-		   echo "[!]  An error has been found!!!!!"
-		   echo "[!]  command: $2"
-		   echo "[!]  Log file with error: "$1
-	   	   echo "[!]  These are error lines of the log file:"
-		   cat error_log.txt
-		   echo "[!]  These are error lines from the error log file:"
-		   cat $(echo $1 | cut -d "." -f 1)_err.txt
-		   echo "[!]  More info in file $1"
-		   exit 1
+		   echo -e $( \
+		   echo "[!]  An error has been found!!!!!\n";\
+		   echo "[!]  command: $2\n";\
+		   echo "[!]  Log file with error: "$1\n;\
+	   	   echo "[!]  These are error lines of the log file:\n";\
+		   cat error_log.txt ;\
+		   echo "\n[!]  These are error lines from the error log file:\n";\
+		   cat $(echo $1 | cut -d "." -f 1)_err.txt ;\
+		   echo "\n[!]  More info in file $1\n" ) > error_monitor.txt
+		   #exit 1
 		   return 0
 	   fi
 }
@@ -68,7 +69,7 @@ mon_run (){
 	   # $2 è il file in cui scrivere il log
 	   # $3 se è 1 sovrascrivo il file
 	   # $4 è l'eventuale numero di riga
-
+	   echo "Line $4: $1" >> trace_command.txt
 	   sudo mkdir -p $(dirname $2)
 	   sudo touch $2
 	   sudo touch $(echo $2 | cut -d "." -f 1)_err.txt
@@ -81,7 +82,6 @@ mon_run (){
 	   fi
 	   monitor_file "$2" "line $4: [$1" $!
 	   monitor_file_error $2 "Line $4: $1"
-	   echo "Line $4: $1" >> trace_command.txt
 }
 
 export_path (){
