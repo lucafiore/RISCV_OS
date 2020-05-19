@@ -86,9 +86,9 @@ DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 INSTALL_DIR="/opt/riscv"
 LOG_DIR=$DIR
 PART=0
-# variabili per il cross compiler
-CROSS_COMPILER="pulp" #decide il tipo di compilatore da installare
-TEST_SUITE=1 # se 1 la test suite viene installata altrimenti no
+# cross compiler variables
+CROSS_COMPILER="pulp" # decide the kind of compiler to be installed
+TEST_SUITE=1 # if 1 test suite is installed
 TEST_SUITE_BIT=64 
 # pulpussimo
 PULPISSIMO_ROOT="$DIR/pulpissimo"
@@ -183,11 +183,11 @@ while true; do
 			;;
 	esac
 done
-############# Allargo la finestra per far  stare tutte le scritte 
+############# enlarge the window to fit any writings
 mon_run "sudo apt-get install xterm -y" $LOG_DIR/log/xterm.txt  1 $LINENO 
 resize -s 30 145
 
-############# verifica del sistema operativo
+############# Check operating system
 Print_verbose "[*] Operative system check:" $verbose
 if [[ $(uname -a | grep -i ubuntu | wc -l) = 1 ]]; then
 	SYSTEM=ubuntu
@@ -335,7 +335,7 @@ if [[ $PART -le 1 ]]; then
 	cd pulp-sdk
 	Print_verbose "[*] 		Target and platform selection" $verbose
 	source configs/pulpissimo.sh
-	# devo scegliere la piattaforma: board,fpga,gvsoc,hsas,rtl
+	# I have to choose the platform: board,fpga,gvsoc,hsas,rtl
 	source configs/platform-rtl.sh
 	Print_verbose "[*] 		Build" $verbose
 	mon_run "make all"  $LOG_DIR/log/sdk_build.txt 1 $LINENO
