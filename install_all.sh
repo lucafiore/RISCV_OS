@@ -65,12 +65,14 @@ UsageExit() {
 					 (32-bit with single-precision in registers and double in memory, niche use only), 
 					 lp64 lp64f lp64d (same but with 64-bit long and pointers).
 				linuxm ->  Linux cross-compiler, both 32 and 64 supported
-		-p|--part_install [0|1|2|3]
+		-p|--part_install [0|1|2|3|4|5]
 			Default is set to 0. Set this argument from 0 to 3 to decide the starting point of the installation:
 				0 -> start from scratch
 				1 -> start after the toolchain
 				2 -> start after the sdk
 				3 -> start after pulp-builder
+				4 -> test (hello)
+				5 -> virtual platform
 		-t|--test_suite [y|n]
 			Decide if install test suite or not, this test suite 
 
@@ -101,6 +103,12 @@ export PULP_RISCV_GCC_TOOLCHAIN=$INSTALL_DIR
 export VSIM_PATH=$PULPISSIMO_ROOT
 export PATH=$PATH:$INSTALL_DIR/bin
 #echo "export PATH=$PATH:$INSTALL_DIR/bin" >> ~/.bash_profile
+
+########## create error log file ###########
+rm -rf error_monitor.txt error_log.txt trace_command.txt
+touch error_monitor.txt error_log.txt trace_command.txt
+
+
 
 TEMP=`getopt -o p:vc:t: --long part:,verbose,cross_compiler:,test_suite: -- "$@"`
 eval set -- "$TEMP"
@@ -223,7 +231,7 @@ if [[ $PART -eq 0 ]]; then
 	else
 		mon_run "sudo yum install autoconf automake libmpc-devel mpfr-devel \
 			gmp-devel gawk  bison flex texinfo patchutils \
-			gcc gcc-c++ zlib-devel -y" $LOG_DIR/log/dep_toolchain.txt 0 $LINENO
+			gcc gcc-c++ zlib-devel -y" $LOG_DIR/log/dep_toolchain.txt 1 $LINENO
 	fi
 	mkdir -p $CLONE
 	# Download of toolchain
@@ -349,7 +357,7 @@ if [[ $PART -le 2 ]]; then
 	gitclone "git clone https://github.com/pulp-platform/pulp-builder.git --progress" "pulp-builder" "pulp-builder"
 
 	cd pulp-builder
-	mon_run "git checkout 0e51ae60d66f4ec326582d63a9fcd40ed2a70e15" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
+	mon_run "git checkout 0e51ae60d66f4ec326582d63a9fcd40ed2a70e15" $LOG_DIR/log/pulp_builder.txt 1 $LINENO
 	mon_run "source configs/pulpissimo.sh" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
 	mon_run "./scripts/clean" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
 	mon_run "./scripts/update-runtime" $LOG_DIR/log/pulp_builder.txt 0 $LINENO
@@ -364,13 +372,35 @@ if [[ $PART -le 3 ]]; then
 	Print_verbose "[*] 	Installation of Pulpissimo"
 	gitclone "git clone https://github.com/pulp-platform/pulpissimo.git --progress " "pulpissimo" "pulpissimo"
 	cd pulpissimo
-	mon_run "./update-ips" $LOG_DIR/log/update_ips.txt 0 $LINENO
+	mon_run "./update-ips" $LOG_DIR/log/update_ips.txt 1 $LINENO
+
+	##### MODELSIM ####
+	source setup/vsim.sh
+	mon_run "make clean build" $LOG_DIR/log/vsim_clean_build.txt 1 $LINENO
+	cd ..
 fi #end of pulpissimo, PART<=3
 
 
+######## test
+if [[ $PART -le 4 ]]; then
+	gitclone "git clone https://github.com/pulp-platform/pulp-rt-examples.git --progress " "pulp-rt-examples" "pulp-rt-examples"
+	cd pulp-rt-examples/hello
+	mon_run "make clean all run" $LOG_DIR/log/make_hello.txt 1 $LINENO
+	cd ..
+fi #end of test
 
 
-
+############ virtual platform
+if [[ $PART -le 5 ]]; then
+	cd ./pulp-builder
+	git checkout 7bd925324fcecae2aad9875f4da45b27d8356796
+	source configs/pulpissimo.sh
+	./scripts/build-gvsoc
+	source sdk-setup.sh
+	source configs/gvsoc.sh
+	cd ..
+	#mon_run "make conf" $LOG_DIR/log/make_conf.txt 1 $LINENO
+fi #end of virtual platform
 
 
 
