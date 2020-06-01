@@ -9,7 +9,7 @@ cd ./pulp-sdk
 
 #To run or debug applications for the FPGA you need to use a recent version of the PULP-SDK (commit id 3256fe7 or newer.'). Configure the SDK for the FPGA platform by running the following commands within the SDK's root directory:
 
-cp ../zcu102.sh ~/pulpissimo/pulp-sdk/configs/fpgas/pulpissimo/ #copy the config file for zcu102 FPGA into the right folder in order use it when you want to use PULPissimo with this FPGA and not with the rtl simulator fo example.
+cp ../zcu102.sh ./configs/fpgas/pulpissimo/ #copy the config file for zcu102 FPGA into the right folder in order use it when you want to use PULPissimo with this FPGA and not with the rtl simulator fo example.
 
 source configs/pulpissimo.sh 			#select the target micro-Controller
 source configs/fpgas/pulpissimo/zcu102.sh 	#select the target platform (RTL simulator, FPGA or virtual platform)
