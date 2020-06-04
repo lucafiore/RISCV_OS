@@ -22,11 +22,12 @@ make all 					# build SDK
 #make env
 #source sourceme.sh
 #cd hello
+export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv" 
 make clean all
 
 #This command builds the ELF binary with UART as the default io peripheral. The binary will be stored at 'build/pulpissimo/[app_name]/[app_name]'.
 
-cd ../ #come back to main folder	
+cd ../.. #come back to main folder	
 
 ##########################################
 ## RUN THE APPLICATION ON zcu102 ##
@@ -45,7 +46,9 @@ cd ../ #come back to main folder
 sudo apt-get install autoconf automake texinfo make libtool pkg-config libusb-1.0 libftdi libusb-0.1
 
 #download, apply the patch and compile OpenOCD
+cd ./pulp-sdk
 source sourceme.sh && ./pulp-tools/bin/plpbuild checkout build --p openocd --stdout
+export OPENOCD="$(pwd)/pkg/openocd/1.0/bin"
 #The SDK will automatically set the environment variable OPENOCD to the installation path of this patched version.
 
 
