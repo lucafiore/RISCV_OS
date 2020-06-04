@@ -15,7 +15,6 @@ cd ./pulpissimo
 ##### Generate the bitstream #####
 
 cd fpga
-
 make zcu102
 
 ##AGGIUNGERE PROCEDURA SWAP
@@ -27,7 +26,11 @@ make zcu102
 
 
 ##### download the bitstream into the FPGA #####
+
+# Step one: Connect the ZCU102 evaluation board to your host machine with a Micro-USB cable from the J2 connector (USB JTAG) on the ZCU102 board to a USB port on your host machine. 
+#Step two: Set the board boot mode to JTAG boot (all four DIP switch of the switch SW6 set to on position) More details on how to setup the zcu102 board are provided in the ZCU102 Evaluation Board User Guide.
 # to set correctly the board, see https://www.xilinx.com/support/answers/68386.html
+
 METHOD=1;
 
 if [[ $METHOD -eq 1 ]]; then
@@ -38,9 +41,7 @@ if [[ $METHOD -eq 1 ]]; then
 	
 elif [[ $METHOD -eq 2 ]] 	
 	#METHOD 2
-	# Step one: Connect the ZCU102 evaluation board to your host machine with a Micro-USB cable from the J2 connector (USB JTAG) on the ZCU102 board to a USB port on your host machine. 
-	#Step two: Set the board boot mode to JTAG boot (all four DIP switch of the switch SW6 set to on position) More details on how to setup the zcu102 board are provided in the ZCU102 Evaluation Board User Guise. 
-	#Step three: Program the ZCU102 with Hardware Manager. Invoke vivado Open Hardware Manager Open Target Program device Detailed instructions on how to use hardware manager are provided in Vivado Design Suite User Guide – programming and Debugging
+	#Program the ZCU102 with Hardware Manager. Invoke vivado Open Hardware Manager Open Target Program device Detailed instructions on how to use hardware manager are provided in Vivado Design Suite User Guide – programming and Debugging
 
 fi
 

@@ -11,18 +11,18 @@ cd ./pulp-sdk
 
 cp ../zcu102.sh ./configs/fpgas/pulpissimo/ #copy the config file for zcu102 FPGA into the right folder in order use it when you want to use PULPissimo with this FPGA and not with the rtl simulator fo example.
 
-source configs/pulpissimo.sh 			#select the target micro-Controller
+source configs/pulpissimo.sh 				#select the target micro-Controller
 source configs/fpgas/pulpissimo/zcu102.sh 	#select the target platform (RTL simulator, FPGA or virtual platform)
-make all 					# build SDK
+make all 									# build SDK
 
 ##########################################
 ## BUILD THE APPLICATION ##
 
 ## build the application - THE FIRST THREE COMMANDS ARE NEEDED BY THE UNOFFICIAL README BUT NOT INTO THE OFFICIAL README
-#make env
-#source sourceme.sh
-#cd hello
-export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv" 
+make env
+source sourceme.sh
+cd hello
+export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv" #this variable was set in install_all.sh
 make clean all
 
 #This command builds the ELF binary with UART as the default io peripheral. The binary will be stored at 'build/pulpissimo/[app_name]/[app_name]'.
@@ -48,8 +48,8 @@ sudo apt-get install autoconf automake texinfo make libtool pkg-config libusb-1.
 #download, apply the patch and compile OpenOCD
 cd ./pulp-sdk
 source sourceme.sh && ./pulp-tools/bin/plpbuild checkout build --p openocd --stdout
-export OPENOCD="$(pwd)/pkg/openocd/1.0/bin"
 #The SDK will automatically set the environment variable OPENOCD to the installation path of this patched version.
+export OPENOCD="$(pwd)/pkg/openocd/1.0/bin" #this comman if SDK doesn't set properly the variable OPENOCD
 
 
 ##########################################
