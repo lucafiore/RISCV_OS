@@ -1,0 +1,49 @@
+---------------
+FreeRTOS links
+---------------
+
+Using FreeRTOS on RISC-V Microcontrollers
+https://www.freertos.org/Using-FreeRTOS-on-RISC-V.html#RISC_V_QUICK_START
+
+What is a demo for FreeRTOS
+https://www.freertos.org/a00102.html
+
+Adapting a FreeRTOS demo to different hardware
+https://www.freertos.org/porting-a-freertos-demo-to-different-hardware.html
+
+Creating a new FreeRTOS project
+https://www.freertos.org/Creating-a-new-FreeRTOS-project.html
+
+
+----------------------
+RISCV implementations
+----------------------
+
+VEGAboard PULP RI5CY Demo using GCC and Eclipse
+https://www.freertos.org/RTOS-RISC-V-Vegaboard_Pulp.html
+
+PULPino
+https://github.com/pulp-platform/pulpino/tree/master/sw/apps/freertos
+
+Gap 
+https://github.com/GreenWaves-Technologies/freeRTOS
+-- ONLINE THEY SAID THIS COULD BE SIMPLEST THAN STARTING FROM PULPINO (https://github.com/pulp-platform/pulpissimo/issues/33)
+
+
+Mi-V RISC-V Soft Processors
+https://github.com/RISCV-on-Microsemi-FPGA/Operating-Systems/tree/master/FreeRTOS7
+
+
+
+-----------------
+IDEA: what to do
+-----------------
+
+In summary, to build FreeRTOS for a RISC-V core you need to:
+
+1 - Include the core FreeRTOS source files and the FreeRTOS RISC-V port layer source files in your project.
+2 - Ensure the assembler’s include path includes the path to the header file that describes any chip specific implementation details.
+3 - Define either a constant in FreeRTOSConfig.h or a linker variable to specify the memory to use as the interrupt stack.
+4 - Define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS in FreeRTOSConfig.h.
+5 - For the assembler, #define portasmHANDLE_INTERRUPT to the name of the function provided by your chip or tools vendor for handling external interrupts.
+6 - Install the FreeRTOS trap handler.
