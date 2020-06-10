@@ -17,7 +17,23 @@ cd ./pulpissimo
 cd fpga
 make zcu102
 
-##AGGIUNGERE PROCEDURA SWAP
+##ATTENTION: the bitstream generation could not work well due to this kind of problem --> "error  Vivado/2019.2/bin/loader: line 280: 27584 Killed  "$RDI_PROG" "$@"
+# This is a memory related problem that can be resolved by increasing the stack in VIVADO or, if it does not work, increasing the swap in your machine.
+# This was tested on a machine with 12GB RAM and initially 1GB swap (8GB at the end). 
+# PROCEDURE 1:
+# 	-add another option to the VIVADO command --> "-stack 2000" (i.e. run: vivado -stack 2000)
+#	-you may also increase the value 2000
+# PROCEDURE 2:
+#	-increase the swap in your machine following these commands to run:
+#	-(with this procedure you increase the swap to 8GB)
+#		sudo swapoff -a
+#		sudo dd if=/dev/zero of=/swapfile bs=1G count=8
+#		sudo mkswap /swapfile
+#		sudo swapon /swapfile
+#		grep SwapTotal /proc/meminfo #to check if now the size f the swap is 8GB
+#
+# SOLUTION: the problem was solved by both increasing the swap and adding the stack option to vivado command (-stack 10000).
+
 
 #This process might take a while. If everything goes well your fpga directory should now contain two files:
 
