@@ -13,7 +13,7 @@ cp ../zcu102.sh ./configs/fpgas/pulpissimo/ #copy the config file for zcu102 FPG
 
 source configs/pulpissimo.sh 				#select the target micro-Controller
 source configs/fpgas/pulpissimo/zcu102.sh 	#select the target platform (RTL simulator, FPGA or virtual platform)
-make all 									# build SDK
+make all 									#build SDK
 
 ##########################################
 ## BUILD THE APPLICATION ##
