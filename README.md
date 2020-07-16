@@ -1,12 +1,12 @@
 PULPissimo Installer 
 ====================================
-## General Info
-The installer bash script is the file install_all.sh with the bash library ccommon.sh
-these file is able to download and configure the complete PULPissimo project with
-all toolchain repository. The installation is configurable via command line argument described below:
+### General Info
+Apart many documentation file the PULPissimo installer bash script is the file install_all.sh (with his bash library ccommon.sh)
+these files are able to download and configure the complete PULPissimo project with
+all PULP toolchain repository. The installation is configurable via command line argument described below:
 
 ## Option
-#-c|--cross-compiler
+*-c|--cross-compiler
   * pulp (defaul option): Install the Newlib cross compiler for all pulp variant and multilib support to build the library 
                           for the various cores (riscy, zeroriscy and so on). Newlib is a C library intended for use on embedded systems. 
                           It is a conglomeration of several library parts, all under free software licenses that make them easily usable 
