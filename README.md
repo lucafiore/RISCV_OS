@@ -6,7 +6,8 @@ these files are able to download and configure the complete PULPissimo project w
 all PULP toolchain repository. The installation is configurable via command line argument described below:
 
 ## Option
-  * -c|--cross-compiler    \[pulp|newlib|linux|linux32|linuxm\]
+  * -v|--verbose   print more information about installation progress.
+  * -c|--cross-compiler        \[pulp|newlib|linux|linux32|linuxm\]
       * pulp (defaul option): Install the Newlib cross compiler for all pulp variant and multilib support to build the library 
                           for the various cores (riscy, zeroriscy and so on). Newlib is a C library intended for use on embedded systems. 
                           It is a conglomeration of several library parts, all under free software licenses that make them easily usable 
@@ -25,3 +26,12 @@ all PULP toolchain repository. The installation is configurable via command line
                 (32-bit with single-precision in registers and double in memory, niche use only), 
                 lp64 lp64f lp64d (same but with 64-bit long and pointers).
       * linuxm:  Linux cross-compiler, both 32 and 64 supported
+  * -p|--part_install     \[0|1|2|3|4|5\] default 0
+      * 0 start from scratch
+			  	* 1 start after the toolchain
+				  * 2 start after the sdk
+				  * 3 start after pulp-builder
+				  * 4 test (hello)
+				  * 5 virtual platform
+  * -t|--test_suite       \[y|n\]  Decide if install test suite or not, this test suite 
+
