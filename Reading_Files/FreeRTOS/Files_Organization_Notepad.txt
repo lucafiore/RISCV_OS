@@ -1,0 +1,37 @@
+
+FreeRTOS
+   │
+   ├─main.c 			
+   ├─FreeRTOSConfig.h 
+   └─[Source]
+        │
+        ├─tasks.c 			FreeRTOS source file - always required
+        ├─list.c 			FreeRTOS source file - always required
+        ├─queue.c 			FreeRTOS source file - nearly always required
+        ├─timers.c 			FreeRTOS source file - optional
+        ├─event_groups.c 		FreeRTOS source file - optional
+        ├─croutine.c 			FreeRTOS source file - optional
+        │
+        ├─[portable]			Directory containing all port specific source files
+        │       │
+        │	├─[MemMang]		Directory containing the alternative heap allocation source
+        │ 	│      │								   files
+        │ 	│      ├─heap_1.c
+        │	│      ├─heap_2.c 			
+        │	│      ├─heap_3.c		 
+        │	│      └─heap_4.c
+        │	│
+        │	└─[GCC] 		Directory containing port files specific to compiler GCC
+        │	    │
+        │	    └─[RI5CY] 		Contains files for compiler architecture RI5CY port
+        │	         │
+        │  	         ├─port.c 			
+        │	         └─portmacro.h
+        │
+        └─[include] 			Directory containing the FreeRTOS kernel header files
+              │
+              ├─FreeRTOS.h
+              ├─task.h
+              ├─...
+              └─list.h 
+	 
