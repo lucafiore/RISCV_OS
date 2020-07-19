@@ -41,6 +41,8 @@ UsageExit() {
 	   echo \
 "installall.sh help:\n \
 	Options:
+		-b|borad)
+			select correct board.
 	   	-v|--verbose   
 			verbose option, script print many others information
 
@@ -95,6 +97,7 @@ TEST_SUITE_BIT=64
 # pulpussimo
 PULPISSIMO_ROOT="$DIR/pulpissimo"
 CLONE="clone_dir"
+BOARD="zcu102"
 ########### end variable
 
 #export_var "PULP_RISCV_GCC_TOOLCHAIN" "$INSTALL_DIR"
@@ -110,12 +113,35 @@ touch error_monitor.txt error_log.txt trace_command.txt
 
 
 
-TEMP=`getopt -o p:vc:t: --long part:,verbose,cross_compiler:,test_suite: -- "$@"`
+TEMP=`getopt -o p:vc:t:b: --long part:,verbose,cross_compiler:,test_suite:,board: -- "$@"`
 eval set -- "$TEMP"
 echo $@
 
 while true; do
 	case $1 in
+		-b|--board)
+			shift
+			case $1 in
+				zcu102)
+					;;
+				zcu104)
+					;;
+				genesys2)
+					;;
+				zedboard)
+					;;
+				nexys)
+					;;
+				nexys_video)
+					;;
+				default)
+					echo "Error board: zcu102, zcu104, genesys2, zedboard, nexys or nexys_video"
+					exit 1;
+					;;
+			esac
+			BOARD=$1
+			shift
+			;;
 		-p|--part)
 			# select the part from which to start the installation	
 			shift
@@ -347,6 +373,12 @@ if [[ $PART -le 1 ]]; then
 	source configs/platform-rtl.sh
 	Print_verbose "[*] 		Build" $verbose
 	mon_run "make all"  $LOG_DIR/log/sdk_build.txt 1 $LINENO
+
+	# modify the json file for the selected board
+	cd ./pulp-config/configs/fpgas/
+	mv genesys2.json $BOARD.json
+	sed -i 's/genesys2/$BOARD/g' $BOARD.json
+	cd ../../../
 
 	cd ../ #exit from sdk
 fi #end of sdk, PART<=1
