@@ -43,7 +43,7 @@ cd ../.. #come back to main folder
 ## OpenOCD ##
 
 #required dependencies
-sudo apt-get install autoconf automake texinfo make libtool pkg-config libusb-1.0 libftdi libusb-0.1
+sudo apt-get install autoconf automake texinfo make libtool pkg-config libusb-1.0 libftdi1 libusb-0.1
 
 #download, apply the patch and compile OpenOCD
 cd ./pulp-sdk
@@ -55,8 +55,13 @@ export OPENOCD="$(pwd)/pkg/openocd/1.0/bin" #this comman if SDK doesn't set prop
 ##########################################
 
 #ON SHELL1 - Launch openocd with a configuration file for the target board
-#SHELL: $OPENOCD/bin/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-digilent-jtag-hs2.cfg
-
+# 
+# The command change if you have hs2 programmer or olimex programmer
+#SHELL:
+#if hs2:
+#    $OPENOCD/bin/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-digilent-jtag-hs2.cfg
+#if ARM-USB-TINY-H
+#    $OPENOCD/bin/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-olimex-arm-usb-ocd-h.cfg
 #ON SHELL2 - launch gdb passing the ELF file as argument
 #SHELL: PULP_RISCV_GCC_TOOLCHAIN_CI/bin/riscv32-unknown-elf-gdb ./pulpissimo/pulp-sdk/build/pulpissimo/[app_name]/[app_name]
 #in my case is /opt/riscv/bin/riscv32-unknown-elf-gdb
