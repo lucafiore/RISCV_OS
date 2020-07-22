@@ -1,8 +1,11 @@
 #!/bin/bash
+# This script is to run  as source:
+# source Application_FPGA.sh
 
 # This script will compile the Application for Xilinx ZCU102
 
 cd ./pulp-sdk
+DIR=`pwd`
 
 ##########################################
 ## SELECT TARGET PLATFORM AND BUILD SDK ##
@@ -19,15 +22,16 @@ make all 									# build SDK
 ## BUILD THE APPLICATION ##
 
 ## build the application - THE FIRST THREE COMMANDS ARE NEEDED BY THE UNOFFICIAL README BUT NOT INTO THE OFFICIAL README
-make env
+#make env
 source sourceme.sh
+
 cd hello
 export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv" #this variable was set in install_all.sh
 make clean all
 
 #This command builds the ELF binary with UART as the default io peripheral. The binary will be stored at 'build/pulpissimo/[app_name]/[app_name]'.
 
-cd ../.. #come back to main folder	
+cd $DIR #come back to main folder	
 
 ##########################################
 ## RUN THE APPLICATION ON zcu102 ##
@@ -59,9 +63,11 @@ export OPENOCD="$(pwd)/pkg/openocd/1.0/bin" #this comman if SDK doesn't set prop
 # The command change if you have hs2 programmer or olimex programmer
 #SHELL:
 #if hs2:
-#    $OPENOCD/bin/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-digilent-jtag-hs2.cfg
+#    $OPENOCD/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-digilent-jtag-hs2.cfg
 #if ARM-USB-TINY-H
-#    $OPENOCD/bin/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-olimex-arm-usb-ocd-h.cfg
+#    $OPENOCD/openocd -f ./pulpissimo/fpga/pulpissimo-zcu102/openocd-zcu102-olimex-arm-usb-ocd-h.cfg
+# https://www.olimex.com/Products/ARM/JTAG/_resources/ARM-USB-TINY_and_TINY_H_manual.pdf
+
 #ON SHELL2 - launch gdb passing the ELF file as argument
 #SHELL: PULP_RISCV_GCC_TOOLCHAIN_CI/bin/riscv32-unknown-elf-gdb ./pulpissimo/pulp-sdk/build/pulpissimo/[app_name]/[app_name]
 #in my case is /opt/riscv/bin/riscv32-unknown-elf-gdb
@@ -70,5 +76,4 @@ export OPENOCD="$(pwd)/pkg/openocd/1.0/bin" #this comman if SDK doesn't set prop
 #SHELL: screen /dev/ttyUSB0 115200
 #Please note you might need to configure the serial port to a different device (for example /dev/ttyUSB1) depending on which USB port on the host side is connected to the UART of the board.
 
-##########################################
-
+#########################################

@@ -1,0 +1,3 @@
+The bitstream generation don't work, so we update drivers
+>>> /tools/Xilinx/Vivado/2020.1/data/xicom/cable_drivers/lin64/install_script/install_drivers$ sudo ./install_drivers
+
