@@ -15,6 +15,7 @@ cd ./pulpissimo
 ##### Generate the bitstream #####
 
 cd fpga
+make clean_zcu102
 make zcu102
 
 ##ATTENTION: the bitstream generation could not work well due to this kind of problem --> "error  Vivado/2019.2/bin/loader: line 280: 27584 Killed  "$RDI_PROG" "$@"
@@ -47,19 +48,19 @@ make zcu102
 #Step two: Set the board boot mode to JTAG boot (all four DIP switch of the switch SW6 set to on position) More details on how to setup the zcu102 board are provided in the ZCU102 Evaluation Board User Guide.
 # to set correctly the board, see https://www.xilinx.com/support/answers/68386.html
 
-METHOD=1;
+#METHOD=1;
 
-if [[ $METHOD -eq 1 ]]; then
+#if [[ $METHOD -eq 1 ]]; then
 	#METHOD1
 	#To download this bitstream into the FPGA connect the PROG USB header, turn the board on and run:
 
-	make -C pulpissimo-zcu102 download
+#	make -C pulpissimo-zcu102 download
 	
-elif [[ $METHOD -eq 2 ]] 	
+#elif [[ $METHOD -eq 2 ]] 	
 	#METHOD 2
 	#Program the ZCU102 with Hardware Manager. Invoke vivado Open Hardware Manager Open Target Program device Detailed instructions on how to use hardware manager are provided in Vivado Design Suite User Guide – programming and Debugging
 
-fi
+#fi
 
 #ATTENTION: if the board is not detected, please run "sudo ./install_drivers" in the directory "{Xilinx_installation_dir}/Vivado/2019.2/data/xicom/cable_drivers/lin64/install_script" and reboot your machine
 
