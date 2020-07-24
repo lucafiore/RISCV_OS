@@ -25,7 +25,7 @@ OPTION
 		for screen is possible to select usb number using
 		-u option
 "
-	
+	exit 1;	
 }
 
 source ccommon.sh
@@ -41,11 +41,10 @@ Cyan='\033[0;36m'         # Cyan
 White='\033[0;37m'        # White
 
 DIR=`pwd`
-sudo chmod 2775 /usr/bin/screen
-pkill -9 screen
+#sudo chmod 2775 /usr/bin/screen
+#sudo pkill -9 screen
 
 
-echo -e $Green"If you have not run this script as source rerun!!"
 
 ### VARIABLES
 BITSTREAM=0
@@ -54,6 +53,7 @@ COMPILE=0
 TERMINALS=0
 NOTHING=1
 USB="ttyUSB0"
+BUILD_SDK_OPENOCD=0
 
 exitflag=0
 LOG=$DIR"/pulp_app_log"
@@ -63,13 +63,20 @@ ENVIRON_FILE=$DIR/.environ.env
 #######################################################################
 ####### COMMAND LINE ARGUMENT HANDLE ##################################
 
-TEMP=`getopt -o bfcu:th --long bitstream,flashing,compile,usb-for-screen:,terminals,help -- "$@"`
+TEMP=`getopt -o sfc:u:t:hb --long bitstream,flashing,compile:,usb-for-screen:,terminals:,help,build-sdk-openocd -- "$@"`
+
 eval set -- "$TEMP"
 
 while true; do
+	echo $1
 	case $1 in
-		-b|--bitstream)
-			BITSTERAM=1	
+		-b|--build-sdk-openocd)
+			BUILD_SDK_OPENOCD=1
+			NOTHING=0
+			shift
+			;;
+		-s|--bitstream)
+			BITSTREAM=1	
 			NOTHING=0
 			shift
 			;;
@@ -80,16 +87,23 @@ while true; do
 			;;
 	       	-c|--compile)
 			COMPILE=1
+			shift
+			C_OPT=$1
+			echo $1
 			NOTHING=0
 			shift
 			;;
 		-u|--usb-for-screen)
 			shift
 			USB=$1
+			echo $1
 			shift
 			;;
 		-t|--terminals)
 			TERMINALS=1
+			shift
+			T_OPT=$1
+			echo $1
 			NOTHING=0
 			shift
 			;;
@@ -112,6 +126,18 @@ fi
 #######################################################################
 ###### PROGRAM ######################################################
 
+# Setting environment variable
+if test -f "$ENVIRON_FILE"; then
+	Print "n" "Set environment var"
+	while read var; do
+		export $var;
+		echo "$var exported";
+	done < $ENVIRON_FILE
+else
+	echo "Error environment not setted!!!"
+	exitflag=1
+fi
+
 mkdir -p $LOG
 
 if [[ $BITSTREAM -eq 1 ]]; then
@@ -126,39 +152,54 @@ if [[ $FLASHING -eq 1 ]]; then
 	mon_run "make -C pulpissimo-zcu102 download" "$LOG/flashing_log.txt" 1 $LINENO
 fi
 
-if [[ $COMPILE -eq 1 ]]; then
-	cd $DIR
-	Print "c" " Compiling hello"
-	mon_run "source Application_FPGA.sh" "$LOG/Application_FPGA_log.txt" 1 $LINENO $ENVIRON_FILE
-	cd $DIR/pulp-rt-examples/hello
-        mon_run "make clean all" "$LOG/make_hello_log.txt" 1 $LINENO
+if [[ $BUILD_SDK_OPENOCD -eq 1 ]]; then
+	cd $DIR/pulp-sdk
+	source configs/pulpissimo.sh
+	source configs/fpgas/pulpissimo/zcu102.sh
+	source sourceme.sh
+	export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv"
+	#source sourceme.sh && ./pulp-tools/bin/plpbuild checkout build --p openocd --stdout
+	export OPENOCD="$DIR/pulp-sdk/pkg/openocd/1.0/bin"
+	#mon_run "make all" "$LOG/make_all.txt" 1 $LINENO
+	env | grep -e "PULP\|OPENOCD" > $ENVIRON_FILE
 fi
-if test -f "$ENVIRON_FILE"; then
-	Print "n" "Set environment var"
-	while read var; do
-		export $var;
-		echo "$var exported";
-	done < $ENVIRON_FILE
-else
-	echo "Error environment not setted!!!"
-	exitflag=1
+
+if [[ $COMPILE -eq 1 ]]; then
+	cd $DIR/pulp-sdk
+	source configs/pulpissimo.sh
+	source configs/fpgas/pulpissimo/zcu102.sh
+	source sourceme.sh
+	export OPENOCD="$DIR/pulp-sdk/pkg/openocd/1.0/bin"
+	export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv"
+	Print "c" " Compiling"
+	cd $DIR/pulp-rt-examples/$C_OPT
+	echo $(pwd)
+        mon_run "make clean all" "$LOG/make_log.txt" 1 $LINENO
 fi
 
 if [[ $TERMINALS -eq 1 ]] && [[ $exitflag -eq 0 ]]; then
  	cd $DIR
         gnome-terminal --geometry=70x15+0+0 -- bash -c "$OPENOCD/openocd -f $DIR/pulpissimo/fpga/pulpissimo-zcu102/olimex-arm-usb-tiny-h.cfg; exec bash"
 
-	gnome-terminal --geometry=70x15+1000+0 -- bash -c "$PULP_RISCV_GCC_TOOLCHAIN/bin/riscv32-unknown-elf-gdb ./pulp-rt-examples/hello/build/pulpissimo/test/test; exec bash"
+	gnome-terminal --geometry=70x15+1000+0 -- bash -c "$PULP_RISCV_GCC_TOOLCHAIN/bin/riscv32-unknown-elf-gdb -x $DIR/pulpissimo/fpga/pulpissimo-zcu102/elf_run.gdb ./pulp-rt-examples/$T_OPT/build/pulpissimo/test/test; exec bash"
 
-	chmod 777 /dev/$USB
-	chmod 777 /dev/ttyUSB1
-	chmod 777 /dev/ttyUSB2
-	chmod 777 /dev/ttyUSB3
-	gnome-terminal --geometry=70x15+1000+355 -- bash -c "screen /dev/$USB 115200; exec bash"
-	gnome-terminal --geometry=70x15+1000+355 -- bash -c "screen /dev/ttyUSB1 115200; exec bash"
-	gnome-terminal --geometry=70x15+1000+355 -- bash -c "screen /dev/ttyUSB2 115200; exec bash"
-	gnome-terminal --geometry=70x15+1000+355 -- bash -c "screen /dev/ttyUSB3 115200; exec bash"
-	#gnome-terminal --geometry=70x15+1000+355 -- bash -c "minicom -D /dev/$USB -b 115200 ; exec bash"
+	if [[ $USB != "all" ]]; then
+		sudo chmod 777 /dev/$USB
+		sudo gnome-terminal --geometry=70x15+1000+355 -- bash -c "sudo screen /dev/$USB 115200; exec bash"
+	else
+		sudo chmod 777 /dev/ttyUSB0
+		sudo chmod 777 /dev/ttyUSB1
+		sudo chmod 777 /dev/ttyUSB2
+		sudo chmod 777 /dev/ttyUSB3
+		sudo chmod 777 /dev/ttyUSB4
+		sudo chmod 777 /dev/ttyUSB5
+		sudo gnome-terminal --geometry=70x15+0+355 -- bash -c "sudo screen /dev/ttyUSB0 115200; exec bash"
+		sudo gnome-terminal --geometry=70x15+200+355 -- bash -c "sudo screen /dev/ttyUSB1 115200; exec bash"
+		sudo gnome-terminal --geometry=70x15+300+355 -- bash -c "sudo screen /dev/ttyUSB2 115200; exec bash"
+		sudo gnome-terminal --geometry=70x15+400+355 -- bash -c "sudo screen /dev/ttyUSB3 115200; exec bash"
+		sudo gnome-terminal --geometry=70x15+500+355 -- bash -c "sudo screen /dev/ttyUSB4 115200; exec bash"
+		sudo gnome-terminal --geometry=70x15+600+355 -- bash -c "sudo screen /dev/ttyUSB5 115200; exec bash"
+	fi
 
 fi
 
