@@ -25,7 +25,7 @@ make all 									#build SDK
 #make env
 source sourceme.sh
 
-cd hello
+cd ./pulp-rt-examples/hello
 export PULP_RISCV_GCC_TOOLCHAIN="/opt/riscv" #this variable was set in install_all.sh
 make clean all
 
