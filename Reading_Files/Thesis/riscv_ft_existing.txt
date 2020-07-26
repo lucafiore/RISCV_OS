@@ -1,0 +1,40 @@
+-"A fault tolerant memory architecture for a RISC-V softcore"
+---TECNICHE
+	Hamming ECC at the memory elements (Hamming Single Error Correction, Double Error Detection (SECDED));
+	NMR (N-modular redundancy) at combinational elements;
+---BENCHMARK ALGORITMI
+	
+
+-"A Low-Cost Fault-Tolerant RISC-V Processor for Space Systems"
+---TECNICHE
+	Hamming code to protect the memory elements (PC in the fetch unit and registers in register file);
+	TMR (Triple modular redundancy) to protect the ALU and the control unit;
+---BENCHMARK ALGORITMI
+	vector addition;
+	CCSDS-123;
+	Coremark benchmark;
+---LIMITS
+	not consider clock-tree and RAM issues so they considered only the effects in the processor while the effects in the FPGA configuration memory were not treated.
+
+
+-"Towards a fault tolerant RISC-V softcore"
+---TECNICHE
+	Hsiao SEC/DED code for cache memory;
+---BENCHMARK ALGORITMI
+	saboteurs;
+
+
+
+-"A RISC-V Fault-Tolerant Microcontroller Core Architecture Based on a Hardware Thread Full-Weak protection and a Thread-Controlled Watch-Dog Timer"
+---TECNICHE
+	TMR to PC, Control & Status registers, Processing Pipeline, Register File (TMR-based full-weak Hardware Thread (HART) protection);
+	Thread Controlled Watch-Dog Timer (TC-WDT) applied to other HART (Hardware Threads);
+---BENCHMARK ALGORITMI
+	TCL scripts which force random bit flip in each flip-flop inside the core;
+
+
+-"An ALU Protection Methodology for SoftProcessors on SRAM-Based FPGAs"
+---TECNICHE
+	partial TMR configurations for the Arithmetic Logic Unit (ALU) ;
+---BENCHMARK ALGORITMI
+	
